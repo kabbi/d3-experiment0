@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+#root {
+  padding: 1em;
+}
+
+.chart-column {
+  display: inline-block;
+  float: left;
+  width: 74%;
+}
+
+.legend-column {
+  display: inline-block;
+  float: left;
+  width: 25%;
+}
+
+.main-chart {
+  height: 300px;
+  margin-bottom: 1em;
+}
+
+.secondary-charts {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.secondary-chart {
+  width: 200px;
+  height: 100px;
+  margin-bottom: 20px;
+}
+
+.secondary-chart small {
+  font-size: 0.5em;
+  padding-left: 2em;
+}
+
+.secondary-chart .y .domain {
+  display: none;
+}
+.secondary-chart .extrema {
+  font-size: 0.5em;
+}
+
+.legend-column__header {
+  font-weight: bold;
+}
+
+.legend-items input {
+  margin-right: 0.5em;
+}
