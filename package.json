@@ -1,0 +1,24 @@
+{
+  "name": "bank-data-d3",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://kabbi.github.io/d3-experiment0",
+  "devDependencies": {
+    "react-scripts": "0.8.4"
+  },
+  "dependencies": {
+    "csv-parse": "^1.1.7",
+    "csv-parser": "^1.11.0",
+    "d3": "^4.4.0",
+    "lodash": "^4.17.2",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
+    "switchery": "github:abpetkov/switchery"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
