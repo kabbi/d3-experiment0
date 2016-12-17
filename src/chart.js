@@ -16,9 +16,9 @@ export const makeChart = options => {
     .append('svg:g')
     .attr('transform', `translate(${margin},${margin})`);
 
-  const { clientWidth, clientHeight } = svg.node().parentNode;
-  const width = clientWidth - 2 * margin;
-  const height = clientHeight - 2 * margin;
+  const svgRect = svg.node().parentNode.getBoundingClientRect();
+  const width = svgRect.width - 2 * margin;
+  const height = svgRect.height - 2 * margin;
 
   const x = d3.scaleBand()
     .rangeRound([0, width])

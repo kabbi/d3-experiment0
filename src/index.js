@@ -62,20 +62,33 @@ getDataSet().then(dataSet => {
   const selection = [];
   renderDataSet(dataSet, selection);
 
-  const toggleAll = d3.select('.legend-column__toggle')
-    .on('click', () => {
+  let toggleAll = null;
+  let toggleAllInstance = null;
+  let ignoreToggleAllChange = false;
+  let toggleBanks = null;
+
+  toggleAll = d3.select('.legend-column__toggle')
+    .on('change', () => {
+      if (ignoreToggleAllChange) {
+        ignoreToggleAllChange = false;
+        return;
+      }
       selection.splice(0);
+      toggleBanks.each((_, index, row) => {
+        row[index].checked = false;
+      });
+      toggleAllInstance.disable();
       renderDataSet(dataSet, selection);
     })
     .call(selection => {
-      new Switchery(selection.node(), {
+      toggleAllInstance = new Switchery(selection.node(), {
         size: 'small',
         color: 'black'
       });
     });
 
   const banks = getAllBanks();
-  d3.select('.legend-items')
+  toggleBanks = d3.select('.legend-items')
     .selectAll('div')
     .data(banks)
     .enter()
@@ -99,8 +112,9 @@ getDataSet().then(dataSet => {
             const pos = selection.findIndex(s => s.index === index);
             selection.splice(pos, 1);
           }
+          ignoreToggleAllChange = true;
+          toggleAllInstance[selection.length === 0 ? 'disable' : 'enable']();
           toggleAll.property('checked', selection.length !== 0);
-          toggleAll.property('disabled', selection.length === 0);
           toggleAll.dispatch('change');
           renderDataSet(dataSet, selection);
         })
