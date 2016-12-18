@@ -59,7 +59,7 @@ export const renderTooltip = throttle((event, column, columnIndex, selection) =>
 
   enter.append('small')
     .attr('class', 'tooltip-row-header')
-    .text('Хучший');
+    .text('Худший');
   const worstRow = enter.append('div')
     .attr('class', 'tooltip-row c-worst');
   worstRow.append('div')
