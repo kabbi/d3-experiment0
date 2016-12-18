@@ -29,6 +29,7 @@ const renderDataSet = (dataSet, selection) => {
         makeChart({
           selector: d3.select(rows[index]),
           columnIndex: RatingsColumns.Total,
+          selection,
           dataSet
         });
       });
@@ -52,6 +53,7 @@ const renderDataSet = (dataSet, selection) => {
           selector: d3.select(rows[index]),
           columnIndex: index + 1,
           small: true,
+          selection,
           dataSet,
           index
         });

@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { keyBy, maxBy, minBy, throttle } from 'lodash';
+import { keyBy, maxBy, minBy, throttle, identity } from 'lodash';
 
 import { DataColumns, RatingsColumns } from './utils/data';
 
@@ -7,11 +7,11 @@ const ColumnCount = 4;
 const DefaultCellOpacity = 0.2;
 const TooltipOffset = 10;
 
-export const renderTooltip = throttle((event, column, columnIndex) => {
+export const renderTooltip = throttle((event, column, columnIndex, selection) => {
   const { pageX, pageY } = event;
   const data = column ? [{ column, columnIndex }] : [];
-  const updateTooltip = selection => {
-    selection
+  const updateTooltip = tooltip => {
+    tooltip
       .style('left', `${pageX + TooltipOffset}px`)
       .style('top', `${pageY + TooltipOffset}px`);
   };
@@ -68,6 +68,32 @@ export const renderTooltip = throttle((event, column, columnIndex) => {
   worstRow.append('div')
     .attr('class', 'tooltip-row-value')
     .text(data => extrema(data, minBy)[data.columnIndex]);
+
+  if (selection && selection.length !== 0) {
+    enter.append('hr');
+    for (const item of selection) {
+      const selected = data => (
+        data.column[DataColumns.Ratings].find(row => (
+          row[RatingsColumns.Bank] === item.value
+        ))
+      );
+      const optional = (value, formatter = identity) => (
+        value ? formatter(value) : 'н/д'
+      );
+      const selectionRow = enter.append('div')
+        .attr('class', 'tooltip-row')
+        .style('color', item.color);
+      selectionRow.append('div')
+        .attr('class', 'tooltip-row-value')
+        .text(item.value);
+      selectionRow.append('div')
+        .attr('class', 'tooltip-row-value')
+        .text(data => {
+          const row = selected(data);
+          return row ? row[data.columnIndex] : 'н/д';
+        });
+    }
+  }
 
   enter.call(updateTooltip);
   tooltip.exit().remove();
@@ -184,7 +210,7 @@ export const makeChart = options => {
     .attr('x', 0)
     .attr('y', 0)
     .on('mousemove', column => {
-      renderTooltip(d3.event, column, columnIndex);
+      renderTooltip(d3.event, column, columnIndex, options.selection);
     })
     .on('mouseleave', () => {
       renderTooltip(d3.event);
@@ -193,20 +219,20 @@ export const makeChart = options => {
 
 export const updateChart = options => {
   const { selector, selection } = options;
-  const selectionByIndex = keyBy(selection, 'index');
+  const selectionByBank = keyBy(selection, 'value');
   const hasSelection = selection.length !== 0;
 
   selector.selectAll('.data-column')
     .selectAll('.data-cell')
-    .style('opacity', (_, index) => {
-      const selected = selectionByIndex[index];
+    .style('opacity', row => {
+      const selected = selectionByBank[row[RatingsColumns.Bank]];
       if (!hasSelection) {
         return DefaultCellOpacity;
       }
       return selected ? 0.8 : 0.02;
     })
-    .style('fill', (_, index) => {
-      const selected = selectionByIndex[index];
+    .style('fill', row => {
+      const selected = selectionByBank[row[RatingsColumns.Bank]];
       return selected ? selected.color : 'black';
     });
 };
