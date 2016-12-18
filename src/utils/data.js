@@ -1,5 +1,5 @@
 import parseCsv from 'csv-parse/lib/sync';
-import { first, uniq } from 'lodash';
+import { first, uniq, flatten } from 'lodash';
 
 export const DataColumns = {
   Year: 0,
@@ -46,7 +46,7 @@ export const getAllBanks = () => {
       ratingRow[RatingsColumns.Bank]
     ))
   ));
-  const uniqBanks = uniq(...banksPerYear);
+  const uniqBanks = uniq(flatten(banksPerYear));
   uniqBanks.sort();
   return uniqBanks;
 };
