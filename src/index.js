@@ -61,6 +61,7 @@ const renderDataSet = (dataSet, selection) => {
 getDataSet().then(dataSet => {
   const selection = [];
   renderDataSet(dataSet, selection);
+  d3.select(document.body).classed('loading', false);
 
   let toggleAll = null;
   let toggleAllInstance = null;

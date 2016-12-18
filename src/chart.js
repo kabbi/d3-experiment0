@@ -1,10 +1,77 @@
 import * as d3 from 'd3';
-import { keyBy } from 'lodash';
+import { keyBy, maxBy, minBy, throttle } from 'lodash';
 
-import { DataColumns } from './utils/data';
+import { DataColumns, RatingsColumns } from './utils/data';
 
 const ColumnCount = 4;
 const DefaultCellOpacity = 0.2;
+const TooltipOffset = 10;
+
+export const renderTooltip = throttle((event, column, columnIndex) => {
+  const { pageX, pageY } = event;
+  const data = column ? [{ column, columnIndex }] : [];
+  const updateTooltip = selection => {
+    selection
+      .style('left', `${pageX + TooltipOffset}px`)
+      .style('top', `${pageY + TooltipOffset}px`);
+  };
+  const tooltip = d3.select('.tooltip-container')
+    .selectAll('.tooltip')
+    .data(data, data => (
+      `${data.column[DataColumns.Year]}-${data.columnIndex}`
+    ))
+    .call(updateTooltip);
+  const enter = tooltip.enter().append('div')
+    .attr('class', 'tooltip');
+  enter.append('small')
+    .attr('class', 'tooltip-row-header')
+    .text('Средняя оценка');
+  const averageRow = enter.append('div')
+    .attr('class', 'tooltip-row __big');
+  averageRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => data.column[DataColumns.Year]);
+  averageRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => (
+      d3.mean(data.column[DataColumns.Ratings].slice(1), row => (
+        row[data.columnIndex]
+      )).toFixed(2)
+    ));
+
+  const extrema = (data, predicate) => (
+    predicate(data.column[DataColumns.Ratings].slice(1), row => (
+      row[data.columnIndex]
+    ))
+  );
+
+  enter.append('small')
+    .attr('class', 'tooltip-row-header')
+    .text('Лучший');
+  const bestRow = enter.append('div')
+    .attr('class', 'tooltip-row c-best');
+  bestRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => extrema(data, maxBy)[RatingsColumns.Bank]);
+  bestRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => extrema(data, maxBy)[data.columnIndex]);
+
+  enter.append('small')
+    .attr('class', 'tooltip-row-header')
+    .text('Хучший');
+  const worstRow = enter.append('div')
+    .attr('class', 'tooltip-row c-worst');
+  worstRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => extrema(data, minBy)[RatingsColumns.Bank]);
+  worstRow.append('div')
+    .attr('class', 'tooltip-row-value')
+    .text(data => extrema(data, minBy)[data.columnIndex]);
+
+  enter.call(updateTooltip);
+  tooltip.exit().remove();
+}, 100);
 
 export const makeChart = options => {
   const { dataSet, selector, columnIndex, small, index } = options;
@@ -63,11 +130,11 @@ export const makeChart = options => {
     .selectAll('g')
     .data(dataSet)
     .enter().append('g')
-    .attr('class', 'data-column')
+      .attr('class', 'data-column')
       .attr('transform', data => (
         `translate(${x(data[DataColumns.Year])},0)`
       ))
-      .selectAll('rect')
+      .selectAll('rect.data-cell')
       .data(data => (
         data[DataColumns.Ratings].slice(1)
       ))
@@ -108,6 +175,20 @@ export const makeChart = options => {
     .attr('dx', extremaShift)
     .attr('class', 'extrema')
     .text(minValue.y);
+
+  svg.selectAll('.data-column')
+    .append('rect')
+    .attr('class', 'highlight')
+    .attr('width', x.bandwidth())
+    .attr('height', height)
+    .attr('x', 0)
+    .attr('y', 0)
+    .on('mousemove', column => {
+      renderTooltip(d3.event, column, columnIndex);
+    })
+    .on('mouseleave', () => {
+      renderTooltip(d3.event);
+    });
 };
 
 export const updateChart = options => {
@@ -115,18 +196,17 @@ export const updateChart = options => {
   const selectionByIndex = keyBy(selection, 'index');
   const hasSelection = selection.length !== 0;
 
-  selector.select('.data-area')
-    .selectAll('.data-column')
-      .selectAll('.data-cell')
-      .style('opacity', (_, index) => {
-        const selected = selectionByIndex[index];
-        if (!hasSelection) {
-          return DefaultCellOpacity;
-        }
-        return selected ? 0.8 : 0.05;
-      })
-      .style('fill', (_, index) => {
-        const selected = selectionByIndex[index];
-        return selected ? selected.color : 'black';
-      });
+  selector.selectAll('.data-column')
+    .selectAll('.data-cell')
+    .style('opacity', (_, index) => {
+      const selected = selectionByIndex[index];
+      if (!hasSelection) {
+        return DefaultCellOpacity;
+      }
+      return selected ? 0.8 : 0.02;
+    })
+    .style('fill', (_, index) => {
+      const selected = selectionByIndex[index];
+      return selected ? selected.color : 'black';
+    });
 };
