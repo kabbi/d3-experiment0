@@ -1,5 +1,8 @@
 import parseCsv from 'csv-parse/lib/sync';
-import { first, uniq, flatten } from 'lodash';
+import first from 'lodash/first';
+import flatten from 'lodash/flatten';
+import memoize from 'lodash/memoize';
+import uniq from 'lodash/uniq';
 
 export const DataColumns = {
   Year: 0,
@@ -11,6 +14,8 @@ export const RatingsColumns = {
   Total: 1,
   Others: 2
 };
+
+export const RatingColumnOffset = 1;
 
 const dataRequire = require.context('../data', false, /.*\.csv$/);
 const DataUrls = dataRequire.keys().reduce((result, item) => {
@@ -38,7 +43,7 @@ export const getDataSet = async () => {
   return cachedDataSet;
 };
 
-export const getAllBanks = () => {
+export const getAllBanks = memoize(() => {
   const banksPerYear = cachedDataSet.map(row => (
     row[DataColumns.Ratings]
   )).map(rows => (
@@ -49,9 +54,9 @@ export const getAllBanks = () => {
   const uniqBanks = uniq(flatten(banksPerYear));
   uniqBanks.sort();
   return uniqBanks;
-};
+});
 
-export const getRatingColumns = () => (
+export const getRatingColumns = memoize(() => (
   first(first(cachedDataSet)[DataColumns.Ratings])
     .slice(RatingsColumns.Others)
-);
+));
