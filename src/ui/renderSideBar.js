@@ -9,6 +9,7 @@ import { getAllBanks } from '../utils/data';
 
 const colors = d3.scaleOrdinal(d3.schemeCategory10);
 let switcheryInstance = null;
+let lastColorIndex = 0;
 
 export default (appState, onUpdateSelection) => {
   const banks = getAllBanks();
@@ -16,6 +17,14 @@ export default (appState, onUpdateSelection) => {
   const items = d3.select('.legend-items')
     .selectAll('div')
     .data(banks);
+
+  const hasSelection = appState.selection.length !== 0;
+
+  d3.select('.legend-switch.__all')
+    .classed('__disabled', hasSelection)
+    .text(`Всех банков (${banks.length})`);
+  d3.select('.legend-switch.__custom')
+    .classed('__disabled', !hasSelection);
 
   items.style('color', (_, index) => {
     const selected = selectedByIndex[index];
@@ -25,7 +34,6 @@ export default (appState, onUpdateSelection) => {
     !!selectedByIndex[index]
   ));
   if (switcheryInstance) {
-    const hasSelection = appState.selection.length !== 0;
     switcheryInstance[hasSelection ? 'enable' : 'disable']();
     if (switcheryInstance.isChecked() !== hasSelection) {
       switcheryInstance.setPosition(true);
@@ -42,7 +50,7 @@ export default (appState, onUpdateSelection) => {
         const selected = {
           index: index,
           value: data,
-          color: colors(appState.selection.length)
+          color: colors(lastColorIndex++)
         };
         onUpdateSelection(d3.event.target.checked ? (
           [...appState.selection, selected]
@@ -62,6 +70,13 @@ export default (appState, onUpdateSelection) => {
           size: 'small',
           color: 'black'
         });
+      });
+
+    const header = d3.select('.legend-column_header');
+    d3.select('.legend-items')
+      .on('scroll', () => {
+        const { scrollTop } = d3.event.target;
+        header.classed('__flying', scrollTop > 0);
       });
   }
 };

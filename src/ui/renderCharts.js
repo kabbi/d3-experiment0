@@ -1,89 +1,16 @@
 import * as d3 from 'd3';
 
-import renderTooltip from './renderTooltip';
+import renderExtrema from './renderExtrema';
+import renderSelection from './renderSelection';
+import getDimensionsAndScales from './getDimensionsAndScales';
+
 import { DataColumns, RatingsColumns, RatingColumnOffset, getRatingColumns }
   from '../utils/data';
 
 const ColumnCount = 4;
 const DefaultCellOpacity = 0.1;
-const HoverSelectionColor = '#726EA9';
-const LineGenerator = d3.line()
-  .defined(p => p && !isNaN(p[0]) && !isNaN(p[1]));
-
-const getDimensionsAndScales = (selector, appState) => {
-  const svg = selector.node();
-  const columnIndex = selector.datum();
-  const small = columnIndex !== 0;
-
-  const margin = small ? 10 : 20;
-  const yMargin = small ? 10 : 30;
-
-  const svgRect = svg.getBoundingClientRect();
-  const width = svgRect.width - 2 * margin;
-  const height = svgRect.height - 2 * margin;
-
-  const x = d3.scaleBand()
-    .rangeRound([0, width])
-    .padding(0.1)
-    .domain(appState.dataSet.map(row => row[DataColumns.Year]));
-  const y = d3.scaleLinear()
-    .rangeRound([yMargin, height - yMargin])
-    .domain([5, 1]);
-
-  return {
-    svg,
-    columnIndex,
-    small,
-    margin,
-    yMargin,
-    width,
-    height,
-    x, y
-  };
-};
-
-const renderSelection = (appState, hovered, columnIndex, index, nodes) => {
-  const selector = d3.select(nodes[index]);
-  const { x, y } = getDimensionsAndScales(selector, appState);
-  const svg = selector.select('g');
-  const data = !hovered ? appState.selection : [
-    ...appState.selection, hovered
-  ];
-
-  const hasSelection = data.length !== 0;
-  svg.select('.data-area')
-    .style('opacity', hasSelection ? 0.5 : 1);
-
-  const lines = svg.select('.data-area-lines')
-    .selectAll('.data-line')
-    .data(data);
-
-  lines.enter()
-    .append('path')
-    .classed('data-line', true)
-    .attr('stroke', data => data.color)
-    .attr('fill', 'none')
-    .attr('d', data => {
-      const points = [];
-      for (const [ year, ratingRows ] of appState.dataSet) {
-        const ratingsRow = ratingRows.find(row => (
-          row[RatingsColumns.Bank] === data.value
-        ));
-        if (!ratingsRow) {
-          points.push(null);
-          continue;
-        }
-        const xValue = x(year);
-        const yValue = y(ratingsRow[columnIndex + 1]);
-        points.push([xValue, yValue]);
-        points.push([xValue + x.bandwidth(), yValue]);
-      }
-      return LineGenerator(points);
-    });
-
-  lines.exit()
-    .remove();
-};
+const HoverSelectionColor = '#858585';
+const MainTitle = 'Изменение оценки банковских услуг';
 
 const makeChart = (appState, columnIndex, index, nodes) => {
   const selector = d3.select(nodes[index]);
@@ -93,16 +20,15 @@ const makeChart = (appState, columnIndex, index, nodes) => {
   const svg = selector.append('svg:g')
     .attr('transform', `translate(${margin},${margin})`);
 
-  if (small) {
-    svg.append('text')
-      .classed('chart-label', true)
-      .text(getRatingColumns()[columnIndex - 1])
-      .attr('x', 0)
-      .attr('y', 0);
-  }
+  svg.append('text')
+    .classed('chart-label', true)
+    .text(small ? getRatingColumns()[columnIndex - 1] : MainTitle)
+    .attr('x', 0)
+    .attr('y', 0);
 
   if (!small) {
-    const xAxis = d3.axisBottom(x);
+    const xAxis = d3.axisBottom(x)
+      .tickSize(0);
     svg.append('g')
       .classed('x axis', true)
       .attr('transform', `translate(0,${height})`)
@@ -118,7 +44,9 @@ const makeChart = (appState, columnIndex, index, nodes) => {
   }
   if (yAxisPosition) {
     const yAxis = d3[`axis${yAxisPosition}`](y)
-      .ticks(5);
+      .tickValues(d3.range(1, 6))
+      .tickFormat(d3.format('d'))
+      .tickSize(0);
     if (small) {
       yAxis.tickSize(0);
     }
@@ -140,23 +68,24 @@ const makeChart = (appState, columnIndex, index, nodes) => {
         const columns = selector.selectAll('.data-column');
         columns.append('rect')
           .classed('highlight', true)
-          .style('opacity', 0)
           .attr('width', x.bandwidth())
           .attr('height', height)
           .attr('x', 0)
           .attr('y', 0);
         columns
-          .on('mousemove', (column, index, nodes) => {
-            d3.select(nodes[index])
-              .select('rect.highlight')
-              .style('opacity', 0.1);
-            renderTooltip(appState, null, column, columnIndex);
+          .on('mouseenter', (data, index, nodes) => {
+            appState.hoveredColumn = {
+              year: data[DataColumns.Year],
+              rowIndex: index,
+              columnIndex,
+            };
+            svg.select('.data-area-extremas')
+              .call(renderExtrema, appState);
           })
           .on('mouseleave', (_, index, nodes) => {
-            d3.select(nodes[index])
-              .select('rect.highlight')
-              .style('opacity', 0.0);
-            renderTooltip(appState);
+            appState.hoveredColumn = null;
+            svg.select('.data-area-extremas')
+              .call(renderExtrema, appState);
           });
       })
       .attr('transform', data => (
@@ -177,21 +106,37 @@ const makeChart = (appState, columnIndex, index, nodes) => {
         .classed('hide', data => (
           !isFinite(data[columnIndex + RatingColumnOffset])
         ))
-        .on('mousemove', (data, cellIndex, cellNodes) => {
+        .on('mouseenter', (data, cellIndex, cellNodes) => {
+          appState.hoveredRow = {
+            year: d3.select(cellNodes[cellIndex].parentNode).datum()[DataColumns.Year],
+            value: data[columnIndex + RatingColumnOffset] || 0,
+          };
+          svg.select('.data-area-extremas')
+            .call(renderExtrema, appState);
           const hovered = {
             value: data[RatingsColumns.Bank],
             color: HoverSelectionColor
           };
-          const column = d3.select(cellNodes[cellIndex].parentNode).datum();
           renderSelection(appState, hovered, columnIndex, index, nodes);
-          // renderTooltip(appState, hovered, column, columnIndex);
         })
         .on('mouseleave', data => {
+          appState.hoveredRow = null;
+          svg.select('.data-area-extremas')
+            .call(renderExtrema, appState);
           renderSelection(appState, null, columnIndex, index, nodes)
         });
 
   svg.append('g')
     .classed('data-area-lines', true);
+  svg.append('g')
+    .classed('data-area-extremas', true)
+    .call(renderExtrema, appState);
+
+  const labelMargin = small ? 0 : 15;
+  svg.append('text')
+    .classed('data-area-label', true)
+    .attr('x', labelMargin)
+    .attr('y', height - labelMargin);
 };
 
 export default appState => {
@@ -205,6 +150,8 @@ export default appState => {
     .attr('width', '0')
     .attr('height', '0')
     .classed('chart', true)
+    .classed('__main', data => !data)
+    .classed('__small', data => !!data)
     .each(makeChart.bind(null, appState))
   .merge(charts)
     .each(renderSelection.bind(null, appState, null));
