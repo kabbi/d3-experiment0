@@ -7,9 +7,9 @@ import { RatingsColumns, RatingColumnOffset } from '../utils/data';
 const greater = (a, b) => a > b;
 const less = (a, b) => a < b;
 
-const getExtrema = (appState, columnIndex, compare, filterByYear, filterByBank) => {
+const getExtrema = (app, columnIndex, compare, filterByYear, filterByBank) => {
   let value = null;
-  for (const [ year, ratingRows ] of appState.dataSet) {
+  for (const [ year, ratingRows ] of app.dataSet) {
     if (filterByYear && year !== filterByYear) {
       continue;
     }
@@ -29,40 +29,40 @@ const getExtrema = (appState, columnIndex, compare, filterByYear, filterByBank) 
   return value;
 };
 
-export default (selector, appState) => {
+export default (selector, app) => {
   const svg = d3.select(selector.node().parentNode.parentNode);
-  const { x, y, columnIndex } = getDimensionsAndScales(svg, appState);
+  const { x, y, columnIndex } = getDimensionsAndScales(svg, app);
 
   const selection = selector.selectAll('text')
     .data([{
       id: 'global-max',
-      value: getExtrema(appState, columnIndex, greater),
+      value: getExtrema(app, columnIndex, greater),
       baseline: 'after'
     }, {
       id: 'global-min',
-      value: getExtrema(appState, columnIndex, less),
+      value: getExtrema(app, columnIndex, less),
       baseline: 'before'
-    }, ...(!appState.hoveredColumn ? [] : [{
+    }, ...(!app.state.hoveredColumn ? [] : [{
       id: 'hovered-column-max',
-      value: getExtrema(appState, columnIndex, greater, appState.hoveredColumn.year),
+      value: getExtrema(app, columnIndex, greater, app.state.hoveredColumn.year),
       baseline: 'after'
     }, {
       id: 'hovered-column-min',
-      value: getExtrema(appState, columnIndex, less, appState.hoveredColumn.year),
+      value: getExtrema(app, columnIndex, less, app.state.hoveredColumn.year),
       baseline: 'before'
-    }]), ...(!appState.hoveredRow ? [] : [{
+    }]), ...(!app.state.hoveredRow ? [] : [{
       id: 'hovered-row',
-      value: [appState.hoveredRow.year, appState.hoveredRow.value],
+      value: [app.state.hoveredRow.year, app.state.hoveredRow.value],
       baseline: 'after'
     }]), ...flatten(
-      appState.selection.map(selected => [{
+      app.state.selection.map(selected => [{
         id: `selection-${selected.index}-max`,
-        value: getExtrema(appState, columnIndex, greater, null, selected.value),
+        value: getExtrema(app, columnIndex, greater, null, selected.value),
         color: selected.color,
         baseline: 'after'
       }, {
         id: `selection-${selected.index}-min`,
-        value: getExtrema(appState, columnIndex, less, null, selected.value),
+        value: getExtrema(app, columnIndex, less, null, selected.value),
         color: selected.color,
         baseline: 'before'
       }])

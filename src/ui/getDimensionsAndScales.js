@@ -3,7 +3,7 @@ import memoize from 'lodash/memoize';
 
 import { DataColumns } from '../utils/data';
 
-const getDimensionsAndScales = (selector, appState) => {
+const getDimensionsAndScales = (selector, app) => {
   const svg = selector.node();
   const columnIndex = selector.datum();
   const small = columnIndex !== 0;
@@ -22,7 +22,7 @@ const getDimensionsAndScales = (selector, appState) => {
   const x = d3.scaleBand()
     .rangeRound([0, width])
     .padding(0.15)
-    .domain(appState.dataSet.map(row => row[DataColumns.Year]));
+    .domain(app.dataSet.map(row => row[DataColumns.Year]));
   const y = d3.scaleLinear()
     .rangeRound([0, height])
     .domain([6, 0]);

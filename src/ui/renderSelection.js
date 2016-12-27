@@ -7,16 +7,28 @@ import { RatingsColumns } from '../utils/data';
 const LineGenerator = d3.line()
   .defined(p => p && !isNaN(p[0]) && !isNaN(p[1]));
 
-export default (appState, hovered, columnIndex, index, nodes) => {
+const concatSelectionAndHover = (app, hovered) => {
+  const { selection } = app.state;
+  if (!hovered) {
+    return selection;
+  }
+  const hoverInSelection = hovered && selection.find(selected => (
+    selected.value === hovered.value
+  ));
+  if (hoverInSelection) {
+    return selection;
+  }
+  return selection.concat(hovered);
+};
+
+export default (app, hovered, columnIndex, index, nodes) => {
   const selector = d3.select(nodes[index]);
-  const { x, y } = getDimensionsAndScales(selector, appState);
+  const data = concatSelectionAndHover(app, hovered);
+  const { x, y } = getDimensionsAndScales(selector, app);
   const svg = selector.select('g');
-  const data = !hovered ? appState.selection : [
-    ...appState.selection, hovered
-  ];
 
   svg.select('.data-area-extremas')
-    .call(renderExtrema, appState);
+    .call(renderExtrema, app);
 
   const hasSelection = data.length !== 0;
   svg.select('.data-area')
@@ -28,7 +40,10 @@ export default (appState, hovered, columnIndex, index, nodes) => {
 
   const lines = svg.select('.data-area-lines')
     .selectAll('.data-line')
-    .data(data, data => data.value);
+    .data(data, data => data.value)
+
+  lines
+    .attr('stroke', ({ color }) => color);
 
   lines.enter()
     .append('path')
@@ -37,7 +52,7 @@ export default (appState, hovered, columnIndex, index, nodes) => {
     .attr('fill', 'none')
     .attr('d', data => {
       const points = [];
-      for (const [ year, ratingRows ] of appState.dataSet) {
+      for (const [ year, ratingRows ] of app.dataSet) {
         const ratingsRow = ratingRows.find(row => (
           row[RatingsColumns.Bank] === data.value
         ));

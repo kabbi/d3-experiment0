@@ -8,47 +8,36 @@ import '../vendor/switchery.css';
 import renderSparkLine from './renderSparkLine';
 import { getAllBanks } from '../utils/data';
 
-const colors = d3.scaleOrdinal(d3.schemeCategory10);
 let switcheryInstance = null;
-let lastColorIndex = 0;
 
-const appendCheckbox = (selector, appState, onUpdateSelection) => {
+const appendCheckbox = (selector, app) => {
   const id = (_, index) => `c${index}`;
   selector.append('input')
     .attr('id', id)
     .attr('type', 'checkbox')
     .on('change', (data, index) => {
-      const selected = {
-        index: index,
-        value: data,
-        color: colors(lastColorIndex++)
-      };
-      onUpdateSelection(d3.event.target.checked ? (
-        [...appState.selection, selected]
-      ) : (
-        appState.selection.filter(s => s.index !== index)
-      ));
+      app.handlers.onToggleSelection(data, d3.event.target.checked);
     });
   selector.append('label')
     .attr('for', id)
     .text(identity);
 };
 
-const appendSparkLine = (selector, appState) => {
+const appendSparkLine = (selector, app) => {
   selector.append('svg')
     .attr('width', 0)
     .attr('height', 0)
-    .call(renderSparkLine, appState);
+    .call(renderSparkLine, app);
 };
 
-export default (appState, onUpdateSelection) => {
+export default app => {
   const banks = getAllBanks();
-  const selectedByIndex = keyBy(appState.selection, 'index');
+  const selectedByIndex = keyBy(app.state.selection, 'index');
   const items = d3.select('.legend-items')
     .selectAll('.legend-item')
     .data(banks);
 
-  const hasSelection = appState.selection.length !== 0;
+  const hasSelection = app.state.selection.length !== 0;
 
   d3.select('.legend-switch.__all')
     .classed('__disabled', hasSelection)
@@ -73,13 +62,14 @@ export default (appState, onUpdateSelection) => {
   items.enter()
     .append('div')
     .classed('legend-item', true)
-    .call(appendCheckbox, appState, onUpdateSelection)
-    .call(appendSparkLine, appState);
+    .call(appendCheckbox, app)
+    .call(appendSparkLine, app);
 
   if (!switcheryInstance) {
     d3.select('.legend-column__toggle')
       .on('change', () => {
-        onUpdateSelection([]);
+        app.state.selection = [];
+        app.handlers.onSelectionChanged();
       })
       .call(selection => {
         switcheryInstance = new Switchery(selection.node(), {

@@ -12,10 +12,10 @@ const DefaultCellOpacity = 0.1;
 const HoverSelectionColor = '#858585';
 const MainTitle = 'Изменение оценки банковских услуг';
 
-const makeChart = (appState, columnIndex, index, nodes) => {
+const makeChart = (app, columnIndex, index, nodes) => {
   const selector = d3.select(nodes[index]);
   const { small, margin, width, height, x, y } =
-    getDimensionsAndScales(selector, appState);
+    getDimensionsAndScales(selector, app);
 
   const svg = selector.append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -61,7 +61,7 @@ const makeChart = (appState, columnIndex, index, nodes) => {
   svg.append('g')
     .classed('data-area', true)
     .selectAll('g')
-    .data(appState.dataSet)
+    .data(app.dataSet)
     .enter().append('g')
       .classed('data-column', true)
       .call(seletor => {
@@ -74,18 +74,18 @@ const makeChart = (appState, columnIndex, index, nodes) => {
           .attr('y', 0);
         columns
           .on('mouseenter', (data, index, nodes) => {
-            appState.hoveredColumn = {
+            app.state.hoveredColumn = {
               year: data[DataColumns.Year],
               rowIndex: index,
               columnIndex,
             };
             svg.select('.data-area-extremas')
-              .call(renderExtrema, appState);
+              .call(renderExtrema, app);
           })
           .on('mouseleave', (_, index, nodes) => {
-            appState.hoveredColumn = null;
+            app.state.hoveredColumn = null;
             svg.select('.data-area-extremas')
-              .call(renderExtrema, appState);
+              .call(renderExtrema, app);
           });
       })
       .attr('transform', data => (
@@ -106,31 +106,34 @@ const makeChart = (appState, columnIndex, index, nodes) => {
         .classed('hide', data => (
           !isFinite(data[columnIndex + RatingColumnOffset])
         ))
+        .on('click', data => {
+          app.handlers.onToggleSelection(data[RatingsColumns.Bank]);
+        })
         .on('mouseenter', (data, cellIndex, cellNodes) => {
-          appState.hoveredRow = {
+          app.hoveredRow = {
             year: d3.select(cellNodes[cellIndex].parentNode).datum()[DataColumns.Year],
             value: data[columnIndex + RatingColumnOffset] || 0,
           };
           svg.select('.data-area-extremas')
-            .call(renderExtrema, appState);
+            .call(renderExtrema, app);
           const hovered = {
             value: data[RatingsColumns.Bank],
             color: HoverSelectionColor
           };
-          renderSelection(appState, hovered, columnIndex, index, nodes);
+          renderSelection(app, hovered, columnIndex, index, nodes);
         })
         .on('mouseleave', data => {
-          appState.hoveredRow = null;
+          app.hoveredRow = null;
           svg.select('.data-area-extremas')
-            .call(renderExtrema, appState);
-          renderSelection(appState, null, columnIndex, index, nodes)
+            .call(renderExtrema, app);
+          renderSelection(app, null, columnIndex, index, nodes)
         });
 
   svg.append('g')
     .classed('data-area-lines', true);
   svg.append('g')
     .classed('data-area-extremas', true)
-    .call(renderExtrema, appState);
+    .call(renderExtrema, app);
 
   const labelMargin = small ? 0 : 15;
   svg.append('text')
@@ -139,7 +142,7 @@ const makeChart = (appState, columnIndex, index, nodes) => {
     .attr('y', height - labelMargin);
 };
 
-export default appState => {
+export default app => {
   const columnCount = getRatingColumns().length + 1;
   const charts = d3.select('.chart-column')
     .selectAll('svg.chart')
@@ -152,7 +155,7 @@ export default appState => {
     .classed('chart', true)
     .classed('__main', data => !data)
     .classed('__small', data => !!data)
-    .each(makeChart.bind(null, appState))
+    .each(makeChart.bind(null, app))
   .merge(charts)
-    .each(renderSelection.bind(null, appState, null));
+    .each(renderSelection.bind(null, app, null));
 };

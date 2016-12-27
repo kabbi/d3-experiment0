@@ -5,7 +5,7 @@ import { DataColumns, RatingsColumns } from '../utils/data';
 const LineGenerator = d3.line()
   .defined(p => p && !isNaN(p[0]) && !isNaN(p[1]));
 
-export default (selector, appState) => {
+export default (selector, app) => {
   if (selector.size() === 0) {
     return;
   }
@@ -15,7 +15,7 @@ export default (selector, appState) => {
 
   const x = d3.scaleBand()
     .rangeRound([0, width])
-    .domain(appState.dataSet.map(row => (
+    .domain(app.dataSet.map(row => (
       row[DataColumns.Year]
     )));
   const y = d3.scaleLinear()
@@ -28,7 +28,7 @@ export default (selector, appState) => {
     .attr('fill', 'none')
     .attr('d', data => {
       const points = [];
-      for (const [ year, ratingRows ] of appState.dataSet) {
+      for (const [ year, ratingRows ] of app.dataSet) {
         const ratingsRow = ratingRows.find(row => (
           row[RatingsColumns.Bank] === data
         ));
