@@ -8,13 +8,13 @@ body {
   padding: 0;
   font-family: 'PT Sans', sans-serif;
   font-size: 14px;
+  overflow: hidden;
 }
 
 #root {
   display: flex;
   padding: 1em;
   height: 100%;
-  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -41,14 +41,17 @@ body.loading .loader {
   flex-wrap: wrap;
   justify-content: space-around;
   align-content: flex-start;
+  margin: 0 2em;
+  margin-top: 1%;
 }
 
 .legend-column {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  min-width: 1px;
   width: 30%;
+  min-width: 1px;
+  max-width: 300px;
   transform: translate3d(0,0,0);
 }
 .legend-column_header {
@@ -56,7 +59,7 @@ body.loading .loader {
   position: relative;
   font-weight: bold;
   padding-top: 1em;
-  padding-bottom: 1em;
+  padding-bottom: 2em;
 
   flex: 0 0 auto;
   display: flex;
@@ -86,6 +89,7 @@ body.loading .loader {
   bottom: 0;
   height: 0;
   background-image: url('./shadow.png');
+  background-size: cover;
   transition: all 0.1s linear;
 }
 .legend-column_header.__flying:before {
@@ -95,38 +99,59 @@ body.loading .loader {
 .legend-switch.__disabled {
   color: #DDDDDD;
 }
-.legend-items input {
-  margin-right: 0.5em;
-}
 .legend-items {
   min-height: 1px;
-  padding-top: 1em;
   overflow: auto;
+}
+.legend-item {
+  display: flex;
+  justify-content: space-between;
+}
+.legend-item input {
+  flex: 0 0 auto;
+  min-width: 1px;
+}
+.legend-item label {
+  flex: 1 1 auto;
+  min-width: 1px;
+}
+.legend-item svg {
+  flex: 0 0 auto;
+  width: 100px;
+  height: 20px;
+}
+.legend-item input {
+  margin-right: 0.5em;
+}
+.legend-item:hover {
+  background-color: #E5E5E5;
 }
 
 .chart .domain {
   display: none;
 }
-.chart.__main .axis {
-  font-size: 1.43em;
-}
-.chart.__small text {
-  font-size: 0.71em;
-}
 .chart .data-area-label {
   font-size: 1.5em;
 }
-.chart:first-child {
+.chart.__main {
+  margin-bottom: 4%;
   min-width: 100%;
-  height: 300px;
-  margin-bottom: 1em;
+  height: 40%;
 }
-.chart:first-child .chart-label {
+.chart.__main .axis {
+  font-size: 1.2em;
+  /* D3 inserts it's own font as an attribute, overriding here */
+  font-family: 'PT Sans', sans-serif;
+}
+.chart.__main .chart-label {
   font-size: 2.14em;
 }
-.chart ~ .chart {
+.chart.__small {
   min-width: 24%;
-  height: 100px;
+  height: 18%;
+}
+.chart.__small text {
+  font-size: 0.71em;
 }
 .chart-label {
   font-size: 0.93em;
