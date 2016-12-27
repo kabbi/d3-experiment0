@@ -49,9 +49,9 @@ body.loading .loader {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  width: 30%;
+  width: 25%;
   min-width: 1px;
-  max-width: 300px;
+  max-width: 250px;
   transform: translate3d(0,0,0);
 }
 .legend-column_header {
@@ -114,10 +114,11 @@ body.loading .loader {
 .legend-item label {
   flex: 1 1 auto;
   min-width: 1px;
+  margin-right: 1em;
 }
 .legend-item svg {
   flex: 0 0 auto;
-  width: 100px;
+  width: 50px;
   height: 20px;
 }
 .legend-item input {
