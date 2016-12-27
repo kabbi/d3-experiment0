@@ -17,8 +17,8 @@ const makeChart = (appState, columnIndex, index, nodes) => {
   const { small, margin, width, height, x, y } =
     getDimensionsAndScales(selector, appState);
 
-  const svg = selector.append('svg:g')
-    .attr('transform', `translate(${margin},${margin})`);
+  const svg = selector.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 
   svg.append('text')
     .classed('chart-label', true)

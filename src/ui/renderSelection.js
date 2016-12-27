@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 
+import renderExtrema from './renderExtrema';
 import getDimensionsAndScales from './getDimensionsAndScales';
 import { RatingsColumns } from '../utils/data';
 
@@ -13,6 +14,9 @@ export default (appState, hovered, columnIndex, index, nodes) => {
   const data = !hovered ? appState.selection : [
     ...appState.selection, hovered
   ];
+
+  svg.select('.data-area-extremas')
+    .call(renderExtrema, appState);
 
   const hasSelection = data.length !== 0;
   svg.select('.data-area')

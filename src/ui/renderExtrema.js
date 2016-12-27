@@ -1,12 +1,13 @@
 import * as d3 from 'd3';
+import flatten from 'lodash/flatten';
 
 import getDimensionsAndScales from './getDimensionsAndScales';
-import { RatingColumnOffset } from '../utils/data';
+import { RatingsColumns, RatingColumnOffset } from '../utils/data';
 
 const greater = (a, b) => a > b;
 const less = (a, b) => a < b;
 
-const getExtrema = (appState, columnIndex, compare, filterByYear) => {
+const getExtrema = (appState, columnIndex, compare, filterByYear, filterByBank) => {
   let value = null;
   for (const [ year, ratingRows ] of appState.dataSet) {
     if (filterByYear && year !== filterByYear) {
@@ -15,6 +16,9 @@ const getExtrema = (appState, columnIndex, compare, filterByYear) => {
     for (const row of ratingRows.slice(1)) {
       const current = row[columnIndex + RatingColumnOffset];
       if (isNaN(current)) {
+        continue;
+      }
+      if (filterByBank && filterByBank !== row[RatingsColumns.Bank]) {
         continue;
       }
       if (!value || compare(current, value[1])) {
@@ -50,13 +54,26 @@ export default (selector, appState) => {
       id: 'hovered-row',
       value: [appState.hoveredRow.year, appState.hoveredRow.value],
       baseline: 'after'
-    }])], data => (
+    }]), ...flatten(
+      appState.selection.map(selected => [{
+        id: `selection-${selected.index}-max`,
+        value: getExtrema(appState, columnIndex, greater, null, selected.value),
+        color: selected.color,
+        baseline: 'after'
+      }, {
+        id: `selection-${selected.index}-min`,
+        value: getExtrema(appState, columnIndex, less, null, selected.value),
+        color: selected.color,
+        baseline: 'before'
+      }])
+    )], data => (
       data.id
     ));
 
   selection.enter()
     .append('text')
     .text(({ value: [ _, current ]}) => current)
+    .style('fill', ({ color }) => color || 'black')
     .attr('x', ({ value: [ year ] }) => x(year))
     .attr('y', ({ baseline, value: [ _, current ]}) => (
       y(current) + (baseline === 'before' ? 2 : 0)

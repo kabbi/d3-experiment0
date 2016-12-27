@@ -8,10 +8,16 @@ const getDimensionsAndScales = (selector, appState) => {
   const columnIndex = selector.datum();
   const small = columnIndex !== 0;
 
-  const margin = small ? 10 : 20;
+  const margin = {
+    top: small ? 10 : 20,
+    right: small ? 10 : 0,
+    bottom: small ? 10 : 20,
+    left: small ? 10 : 20,
+  };
+
   const svgRect = svg.getBoundingClientRect();
-  const width = svgRect.width - 2 * margin;
-  const height = svgRect.height - 2 * margin;
+  const width = svgRect.width - margin.left - margin.right;
+  const height = svgRect.height - margin.top - margin.bottom;
 
   const x = d3.scaleBand()
     .rangeRound([0, width])
