@@ -53,33 +53,21 @@ body.loading .loader {
   min-width: 1px;
   max-width: 250px;
   transform: translate3d(0,0,0);
+  margin-bottom: 4%;
 }
 .legend-column_header {
+  flex: 0 0 auto;
   min-height: 1px;
   position: relative;
   font-weight: bold;
   padding-top: 1em;
   padding-bottom: 2em;
-
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-}
-.legend-switch {
-  flex: 1 1 auto;
-  width: 50%;
-  min-width: 1px;
 }
 .legend-switch.__all {
-  text-align: right;
   margin-right: 0.5em;
 }
 .legend-switch.__custom {
-  text-align: left;
   margin-left: 0.5em;
-}
-.legend-column_toggle {
-  flex: 0 0 auto;
 }
 .legend-column_header:before {
   content: '';
@@ -149,7 +137,7 @@ body.loading .loader {
 }
 .chart.__small {
   min-width: 24%;
-  height: 18%;
+  height: 16%;
 }
 .chart.__small text {
   font-size: 0.71em;
