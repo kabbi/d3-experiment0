@@ -40,7 +40,6 @@ export default app => {
   const hasSelection = app.state.selection.length !== 0;
 
   d3.select('.legend-switch.__all')
-    .classed('__disabled', hasSelection)
     .text(`Всех банков (${banks.length})`);
   d3.select('.legend-switch.__custom')
     .classed('__disabled', !hasSelection);
