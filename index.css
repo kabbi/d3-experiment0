@@ -13,9 +13,10 @@ body {
 
 #root {
   display: flex;
-  padding: 1em;
+ // padding: 1em 2em 10em 0;
   height: 100%;
   margin: 0 auto;
+  background-color: #eee;
 }
 
 .loader {
@@ -41,7 +42,7 @@ body.loading .loader {
   flex-wrap: wrap;
   justify-content: space-around;
   align-content: flex-start;
-  margin: 0 2em;
+  margin: 0 4.5% 4% 2%;
   margin-top: 1%;
 }
 
@@ -49,19 +50,19 @@ body.loading .loader {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  width: 25%;
+  width: 27%;
   min-width: 1px;
-  max-width: 250px;
+  max-width: 260px;
   transform: translate3d(0,0,0);
-  margin-bottom: 4%;
+  margin-bottom: 8.5%;
 }
 .legend-column_header {
   flex: 0 0 auto;
   min-height: 1px;
   position: relative;
   font-weight: bold;
-  padding-top: 1em;
-  padding-bottom: 2em;
+  padding-top: 1.5em;
+  padding-bottom: 0.5em;
 }
 .legend-switch.__all {
   margin-right: 0.5em;
@@ -76,7 +77,7 @@ body.loading .loader {
   right: 0;
   bottom: 0;
   height: 0;
-  background-image: url('./shadow.png');
+  //background-image: url('./shadow.png');
   background-size: cover;
   transition: all 0.1s linear;
 }
@@ -123,24 +124,25 @@ body.loading .loader {
   font-size: 1.5em;
 }
 .chart.__main {
-  margin-bottom: 4%;
+  margin-bottom: 8%;
   min-width: 100%;
   height: 40%;
 }
 .chart.__main .axis {
-  font-size: 1.2em;
+  font-size: 1.6em;
   /* D3 inserts it's own font as an attribute, overriding here */
   font-family: 'PT Sans', sans-serif;
 }
 .chart.__main .chart-label {
-  font-size: 2.14em;
+  font-size: 2em;
+  margin: 1em 0 1em -1em;
 }
 .chart.__small {
   min-width: 24%;
   height: 16%;
 }
 .chart.__small text {
-  font-size: 0.71em;
+  font-size: 0.75em;
 }
 .chart-label {
   font-size: 0.93em;
