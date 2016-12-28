@@ -110,7 +110,7 @@ const makeChart = (app, columnIndex, index, nodes) => {
           app.handlers.onToggleSelection(data[RatingsColumns.Bank]);
         })
         .on('mouseenter', (data, cellIndex, cellNodes) => {
-          app.hoveredRow = {
+          app.state.hoveredRow = {
             year: d3.select(cellNodes[cellIndex].parentNode).datum()[DataColumns.Year],
             value: data[columnIndex + RatingColumnOffset] || 0,
           };
@@ -123,7 +123,7 @@ const makeChart = (app, columnIndex, index, nodes) => {
           renderSelection(app, hovered, columnIndex, index, nodes);
         })
         .on('mouseleave', data => {
-          app.hoveredRow = null;
+          app.state.hoveredRow = null;
           svg.select('.data-area-extremas')
             .call(renderExtrema, app);
           renderSelection(app, null, columnIndex, index, nodes)
