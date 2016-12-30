@@ -54,7 +54,7 @@ body.loading .loader {
   min-width: 1px;
   max-width: 260px;
   transform: translate3d(0,0,0);
-  margin-bottom: 8.5%;
+  margin-bottom: 8%;
 }
 .legend-column_header {
   flex: 0 0 auto;
@@ -77,7 +77,7 @@ body.loading .loader {
   right: 0;
   bottom: 0;
   height: 0;
-  //background-image: url('./shadow.png');
+  background-image: url('./shadow.png');
   background-size: cover;
   transition: all 0.1s linear;
 }
